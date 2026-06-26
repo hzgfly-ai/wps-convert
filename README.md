@@ -26,8 +26,10 @@ node convert.js 合同.docx --to pdf  -o 合同.pdf
 ## 安装（一条命令）
 
 ```bash
-git clone https://github.com/<你的账号>/wps-convert.git && cd wps-convert && npm install && npm run setup
+git clone https://github.com/hzgfly-ai/wps-convert.git && cd wps-convert && npm install && npm run setup
 ```
+
+> 想让 Claude Code / Cursor 等 Agent 直接调用，把它装成 Skill：克隆到 `~/.claude/skills/wps-convert` 再 `npm install && npm run setup` 即可（目录名要保持 `wps-convert`，与 `SKILL.md` 的 `name` 一致）。
 
 `npm run setup` 会下载 chromium 并弹出二维码——用手机 WPS 扫一次即可（登录态存到 `.profile/`，实测约一年有效）。扫完之后，每次转换就一条命令：
 
