@@ -5,48 +5,41 @@ description: 用 WPS 在线服务做 PDF/Office 文档格式转换（PDF↔Word/
 
 # WPS 文档格式转换
 
-传文件路径 + 目标格式，拿到结果文件。脚本会在后台起一个浏览器，
-但**只用它维持登录态**，转换是直接调 WPS 的 API 完成的——不点任何网页 UI。
-所以比用 Playwright/browser 工具一步步点（选文件、等上传、轮询页面）快且稳。
+一条命令把文件转成目标格式。脚本在后台起浏览器**只为维持登录态**，转换直接调 WPS 的 API 完成——不点任何网页 UI，比驱动浏览器逐步操作快且稳。
 
-## 何时用
+## 用法
 
-用户需要在以下格式之间转换文档时：
-- PDF → Word(docx) / PPT(pptx) / Excel(xlsx) / HTML
-- Word(docx/doc) / PPT(pptx/ppt) / Excel(xlsx/xls) → PDF
-
-## 怎么用
-
-一条命令（在 `wps-convert/` 目录下）：
+在 `wps-convert/` 目录下：
 
 ```bash
 node convert.js <输入文件> --to <目标格式> -o <输出文件>
 ```
 
 例：
+
 ```bash
 node convert.js 报告.pdf --to docx -o 报告.docx
-node convert.js 合同.docx --to pdf -o 合同.pdf
+node convert.js 合同.docx --to pdf  -o 合同.pdf
 ```
 
-- 成功：结果写到 `-o` 路径，退出码 0。
-- 失败：stderr 打印原因，退出码非 0。
-- 排查时加 `--dump dump.json` 会把每步请求/响应记下来。
+- `--to`：`docx` / `pptx` / `xlsx` / `html` / `pdf`（方向取决于源文件类型，全表见 convert.js 的 `CONVERSIONS`）。
+- 成功：结果写到 `-o`，退出码 0；失败：stderr 打印原因，退出码非 0。
+- 排查：加 `--dump dump.json` 记录每步请求/响应。
 
-支持的 `--to`：`docx` / `pptx` / `xlsx` / `html` / `pdf`（取决于源文件类型，见 convert.js 里的 `CONVERSIONS` 表）。
+## 首次使用 / 环境未就绪
 
-## 登录过期怎么办
-
-转换报"未登录 / sign 失败"时，登录态过期了（cookie 约 3 天有效）。
-让用户运行下面命令，扫码重新登录：
+第一次用，或报 `Cannot find module 'playwright'`、浏览器缺失时，在 skill 目录跑一次：
 
 ```bash
-node login.js
+npm install && npm run setup
 ```
 
-会弹出浏览器，扫码后登录态自动存回 `.profile/`，之后 convert 即可恢复。
+`npm run setup` 会下载 chromium 并弹出登录窗口——让用户用手机 WPS 扫一次二维码（登录态存到 `.profile/`，实测约一年有效）。完成后直接用上面的转换命令。
 
-## 坏了怎么修
+## 报"未登录 / sign 失败"
 
-WPS 前端改版可能导致脚本失效。修复地图见 `NOTES.md`——
-里面有验证过的真实流程、签名机制、以及"哪里最可能变、变了先看哪/怎么重新逆向"的易碎点地图。
+登录态失效了。让用户跑 `node login.js` 扫码重登（登录态存回 `.profile/`）。`wps_sid` 实测约一年有效，且每次转换会自动续期——不是定时过期；真正失效来自风控踢登录、改密、多端互踢等。
+
+## 转换报错但不是登录问题
+
+多半是 WPS 前端改版。修复地图见 `NOTES.md`：验证过的真实流程、签名机制、"哪里最易碎 / 怎么重新逆向"。

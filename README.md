@@ -15,7 +15,7 @@ node convert.js 合同.docx --to pdf  -o 合同.pdf
 - 真正的转换是在已登录页面里直接 `fetch` 调 WPS 的 REST API 完成的，**不点任何网页按钮**——比一步步驱动 UI（选文件、等上传、轮询页面）更快也更稳；
 - **不破解签名算法**：请求签名是调 WPS 自己同源的 `/api/v1/sign` 接口让服务端帮算的。所以 WPS 哪天改了签名算法，这里也不用动。
 
-这套"绕过而非破解"的取舍，逆向过程、验证过的完整流程、以及"哪里最易碎、变了先看哪"的修复地图，都记在 [`NOTES.md`](NOTES.md) 里——那是这个项目最值钱的部分。接口字段细节见 [`API-FULL.md`](API-FULL.md)。
+逆向过程、验证过的完整流程、以及"哪里最易碎、怎么重新逆向"的修复地图，都记在 [`NOTES.md`](NOTES.md) 里——**WPS 改版导致脚本失效时，这是你或你的 Agent 的修复地图**。每个产品的端点与 commit body 见 [`API-FULL.md`](API-FULL.md)。
 
 ## 前置条件
 
@@ -23,13 +23,15 @@ node convert.js 合同.docx --to pdf  -o 合同.pdf
 - 一个 **WPS 会员账号**（转换额度由账号决定；免费账号能力受限）
 - 首次使用需扫码登录
 
-## 用法
+## 安装（一条命令）
 
 ```bash
-npm install                 # 装 playwright
-npx playwright install chromium
+git clone https://github.com/<你的账号>/wps-convert.git && cd wps-convert && npm install && npm run setup
+```
 
-node login.js               # 扫码登录，登录态存到 .profile/
+`npm run setup` 会下载 chromium 并弹出二维码——用手机 WPS 扫一次即可（登录态存到 `.profile/`，实测约一年有效）。扫完之后，每次转换就一条命令：
+
+```bash
 node convert.js <输入文件> --to <目标格式> -o <输出文件>
 ```
 

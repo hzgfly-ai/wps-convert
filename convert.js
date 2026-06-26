@@ -26,7 +26,7 @@ const API = 'https://icdcapi.wps.cn';
 
 // 转换映射：key = `${源扩展名}->${目标格式}`
 // 只增不删：历史 entry 永远保留，新增项追加在末尾。
-// 多文件 / 插页 / 合并 / 图片→PDF 用 probe_multi.js，convert.js 仍只跑单文件 commit。
+// convert.js 只跑单文件 commit；多文件操作（合并/插页/图片→PDF）的 body 结构见 API-FULL.md §1.3。
 const CONVERSIONS = {
   // —— 2026-05-28 首次跑通，pdf→docx 单跑通 ——
   'pdf->docx': { product: 'PDF2WORD',  commit: '/api/v4/commit/pdf2docx',  complete: '/api/v2/job/convert/completed' },
@@ -39,7 +39,7 @@ const CONVERSIONS = {
   'ppt->pdf':  { product: 'PPT2PDF',   commit: '/api/v4/commit/pptx2pdf',  complete: '/api/v2/job/ppt2pdf/completed' },
   'xlsx->pdf': { product: 'EXCEL2PDF', commit: '/api/v4/commit/xlsx2pdf',  complete: '/api/v2/job/excel2pdf/completed' },
   'xls->pdf':  { product: 'EXCEL2PDF', commit: '/api/v4/commit/xlsx2pdf',  complete: '/api/v2/job/excel2pdf/completed' },
-  // —— 2026-06-16 全量逆向新增，全部 probe.js 实测通过 ——
+  // —— 2026-06-16 全量逆向新增，逆向期均已实测通过 ——
   'pdf->png':  { product: 'PDF2PHOTO', commit: '/api/v4/commit/pdf2pic',   complete: '/api/v2/job/pdf2pic/completed' },
   'pdf->jpg':  { product: 'PDF2PHOTO', commit: '/api/v4/commit/pdf2pic',   complete: '/api/v2/job/pdf2pic/completed' },
   'docx->png': { product: 'WORD2LONGIMAGE', commit: '/api/v4/commit/docx2longimage', complete: '/api/v2/job/docx2longimage/completed' },

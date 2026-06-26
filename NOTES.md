@@ -121,27 +121,8 @@ node convert.js sample.pdf --to docx -o out.docx --dump dump.json
 
 ## 7. 登录态寿命与保活（2026-06-15 实测更正）
 
-**旧笔记说"wps_sid 3 天过期"——实测不成立，已更正。** 证据：
-- `wps_sid` cookie 的过期时间是 **2027-05-28**（建立日 +1 年），`last_update` 一直停在建立日没变；
-- 实测「登录态闲置 17 天（5/29→6/15）后仍能成功转换」；
-- 每成功转换一次，`.profile/Default/Cookies` 被回写、`servertag` 等短期 cookie 滚动续期——**只要有人用就自然保鲜**。
+**"wps_sid 3 天过期"是误传，实测不成立。** `wps_sid` 是一年期 cookie（建立日 +1 年，实测到期 2027-05-28），且每成功转换一次就被回写续期——**只要有人用就自然保鲜**，闲置 17 天后仍能转换，不会自己死。
 
-所以登录态**不会因为闲置几天自己死**。真正的失效来自**不可预测**事件：WPS 风控踢登录、账号改密/手动登出/多端互踢、或一年后 sid 绝对到期。定时"续命"救不了这些，关键是**主动探活 + 提前预警**。
+真正的失效来自**不可预测**事件：WPS 风控踢登录、改密/手动登出/多端互踢、或一年后绝对到期。定时"续命"救不了这些，关键是**主动探活**：
 
-### healthcheck.js —— 端到端最小转换自检（保活探针）
-
-`node healthcheck.js [--notify]`：造最小 PDF → 调 convert.js 转 docx → 据结果判健康度。
-一次自检同时覆盖：登录态有效性 + 签名常量 + 接口未改版，并顺带续期。退出码：
-
-| 退出码 | 含义 | 通知文案（--notify 时）|
-|---|---|---|
-| 0 | 健康（转换成功，或 profile 被 worker 占用=显然有效）| 无 |
-| 2 | 登录态失效/缺失 | "WPS 登录态失效，扫码重登" |
-| 1 | 非登录故障（链路异常/cupsfilter 缺失等）| "转换自检失败，疑似 WPS 改版" |
-
-失败会隔 20s 重试一次、以第二次为准，抗偶发抖动。判定登录失效复用 worker.js 同款正则。
-
-### 两处复用 healthcheck
-
-- **每日保活**：launchd `cn.nodium.pdf-portal-healthcheck.plist`（模板在 `pdf-portal/worker/`）每天 10:00 跑 `healthcheck.js --notify`，失效即 macOS 通知。日志 `~/Library/Logs/pdf-portal-healthcheck.log`。
-- **login.js 验活**：`node login.js` 启动先跑 healthcheck（安静模式）真正验证旧 sid，有效则直接返回；失效则**先清掉 `.profile/Default`**（否则残留的一年期失效 sid 会让扫码循环误判"已成功"）再弹浏览器扫码。
+`node healthcheck.js [--notify]` 造最小 PDF → 调 convert.js 转 docx → 据结果判健康度，一次覆盖登录态 + 签名常量 + 接口未改版，并顺带续期。退出码 **0**=健康 / **2**=登录态失效 / **1**=非登录故障（疑似改版）；失败隔 20s 重试一次抗抖动。挂 launchd/cron 每天跑 `--notify` 即可失效预警；`login.js` 启动也复用它做端到端验活（光看 sid 是否存在会假阳性）。

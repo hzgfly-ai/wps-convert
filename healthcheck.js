@@ -1,4 +1,4 @@
-// healthcheck.js —— PDF Portal 登录态/转换链路保活探针（端到端最小转换自检）
+// healthcheck.js —— 登录态 / 转换链路保活探针（端到端最小转换自检）
 //
 // 造一个最小 PDF → 调 convert.js 转 docx → 据结果判定整条链路健康度。
 // 一次自检同时覆盖：WPS 登录态有效性 + 签名常量 + 接口未改版，并顺带给 cookie 续期。
@@ -19,10 +19,10 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONVERT = path.join(__dirname, 'convert.js');
 const PROFILE = path.join(__dirname, '.profile');
-const LOG = path.join(os.homedir(), 'Library/Logs/pdf-portal-healthcheck.log');
+const LOG = path.join(os.homedir(), 'Library/Logs/wps-convert-healthcheck.log');
 const NOTIFY = process.argv.includes('--notify');
 
-// 与 worker.js 保持一致的登录失效识别
+// 登录失效识别（与 convert.js / login.js 的报错文案对齐）
 const LOGIN_ERR = /sign\s*失败|未找到登录态|未登录|登录态|not\s*login/i;
 // profile 被占用（worker 正在转换）——不是故障，本次跳过即可
 const BUSY = /SingletonLock|ProcessSingleton|already (in use|running)|EBUSY|user data directory is already/i;
