@@ -1,0 +1,17 @@
+{
+  "name": "wps-convert",
+  "version": "1.0.0",
+  "description": "命令行调用 WPS 在线服务做文档格式转换（PDF ↔ Word/PPT/Excel/HTML）——借壳维持登录态，直接调 API。",
+  "main": "convert.js",
+  "scripts": {
+    "login": "node login.js",
+    "healthcheck": "node healthcheck.js"
+  },
+  "keywords": ["wps", "pdf", "convert", "docx", "playwright"],
+  "author": "HZG",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
+}
